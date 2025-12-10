@@ -55,7 +55,7 @@ fun SplashScreen(navController: NavController) {
             Text(
                 text = "Welcome To Kafés",
                 style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onTertiary,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -63,7 +63,7 @@ fun SplashScreen(navController: NavController) {
             Text(
                 text = "Your daily coffee companion",
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onTertiary
+                color = MaterialTheme.colorScheme.secondary
             )
         }
 
