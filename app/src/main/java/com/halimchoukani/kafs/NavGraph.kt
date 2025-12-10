@@ -5,6 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.halimchoukani.kafs.ui.screen.LoginScreen
+import com.halimchoukani.kafs.ui.screen.MainScreen
 import com.halimchoukani.kafs.ui.screen.SignUpScreen
 import com.halimchoukani.kafs.ui.screen.SplashScreen
 
@@ -31,6 +32,11 @@ fun SetupNavGraph(
             route = Screen.SignUp.route
         ){
             SignUpScreen(navController = navController)
+        }
+        composable(
+            route = Screen.MainScreen.route
+        ){
+            MainScreen()
         }
     }
 }

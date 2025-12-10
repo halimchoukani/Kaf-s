@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.halimchoukani.kafs.ui.screen.LoginScreen
+import com.halimchoukani.kafs.ui.screen.MainScreen
 import com.halimchoukani.kafs.ui.screen.SplashScreen
 import com.halimchoukani.kafs.ui.theme.KafésTheme
 

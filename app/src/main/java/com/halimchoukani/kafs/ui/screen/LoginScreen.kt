@@ -143,7 +143,9 @@ fun LoginScreen(
 
         // --- 4. Login Button ---
         Button(
-            onClick = {  },
+            onClick = {
+                navController.navigate(Screen.MainScreen.route)
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
