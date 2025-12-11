@@ -1,5 +1,6 @@
 package com.halimchoukani.kafs.ui.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +14,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -22,6 +24,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
 import com.halimchoukani.kafs.R // Ensure this import is correct
 import com.halimchoukani.kafs.Screen
 
@@ -140,11 +144,22 @@ fun LoginScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
+        val context = LocalContext.current
         // --- 4. Login Button ---
         Button(
             onClick = {
-                navController.navigate(Screen.MainScreen.route)
+                Firebase.auth.signInWithEmailAndPassword(email,password)
+                    .addOnCompleteListener { task->
+                        if(task.isSuccessful){
+                            Toast.makeText(context,"Login Successful", Toast.LENGTH_SHORT).show()
+                            navController.navigate(Screen.MainScreen.route){
+                                popUpTo(Screen.Login.route) { inclusive = true  }
+                            }
+                        }else{
+                            Toast.makeText(context,
+                                task.exception?.message?:"Login Failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }
             },
             modifier = Modifier
                 .fillMaxWidth()

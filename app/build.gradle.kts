@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // 1. Apply the Google Services plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -42,6 +44,7 @@ android {
 }
 
 dependencies {
+    implementation(libs.firebase.auth)
     val nav_version = "2.9.6"
     implementation("androidx.compose.material:material:1.6.8")
     implementation("androidx.navigation:navigation-compose:$nav_version")
@@ -53,6 +56,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0")) // Check for the latest version
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+    // 3. Optional: Add a dependency for Firebase common features
+    implementation("com.google.firebase:firebase-analytics-ktx")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

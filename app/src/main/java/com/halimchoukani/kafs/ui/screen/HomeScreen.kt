@@ -205,6 +205,7 @@ data class Coffee(
 
 private val coffees = listOf(
     Coffee("Caffe Mocha", "Deep Foam", "$ 4.53", R.drawable.homefill),
+    Coffee("Caffe Mocha", "Deep Foam", "$ 4.53", R.drawable.homefill),
     Coffee("Flat White", "Espresso", "$ 3.53", R.drawable.homefill)
 )
 
