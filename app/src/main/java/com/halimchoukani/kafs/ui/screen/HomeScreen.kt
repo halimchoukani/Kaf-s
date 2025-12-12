@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -32,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -46,12 +50,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.halimchoukani.kafs.R
+import com.halimchoukani.kafs.data.model.Coffee
 import com.halimchoukani.kafs.ui.component.BottomNavigationBar
+import com.halimchoukani.kafs.ui.component.LoadImage
+import com.halimchoukani.kafs.viewmodel.CoffeeViewModel
 
 
 @Composable
-fun HomeScreen(paddingValues: PaddingValues) {
+fun HomeScreen(paddingValues: PaddingValues,userName: String) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -59,38 +67,65 @@ fun HomeScreen(paddingValues: PaddingValues) {
             .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
     ) {
-        HeaderSection()
-        SearchSection()
-        PromoBanner()
-        CategoryTabs()
-        CoffeeGrid()
+        HeaderSectionModern(userName)
+        Spacer(modifier = Modifier.height(12.dp))
+        SearchSectionModern()
+        Spacer(modifier = Modifier.height(16.dp))
+        PromoBannerModern()
+        Spacer(modifier = Modifier.height(16.dp))
+        CategoryTabsModern()
+        Spacer(modifier = Modifier.height(16.dp))
+        CoffeeGridModern()
     }
 }
 
 @Composable
-fun HeaderSection() {
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+fun HeaderSectionModern(userName: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Column {
             Text(
-                text = "Hello, Alex",
+                text = "Hello, $userName 👋",
                 fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
+                fontSize = 22.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "What coffee are we brewing today?",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Face,
+                contentDescription = "Profile",
+                tint = Color.White
             )
         }
     }
 }
 
 @Composable
-fun SearchSection() {
+fun SearchSectionModern() {
     Row(
         modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-
         TextField(
             value = "",
             onValueChange = {},
@@ -98,7 +133,8 @@ fun SearchSection() {
             singleLine = true,
             modifier = Modifier
                 .weight(1f)
-                .clip(RoundedCornerShape(14.dp)),
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color.White),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White,
@@ -117,54 +153,55 @@ fun SearchSection() {
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(MaterialTheme.colorScheme.primary),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = Icons.Default.Face,
-                contentDescription = null,
-                tint = Color.White
+            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
+        }
+    }
+}
+
+@Composable
+fun PromoBannerModern() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(160.dp)
+            .padding(horizontal = 16.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(MaterialTheme.colorScheme.primary, Color(0xFFFFA726))
+                )
+            )
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterStart)
+        ) {
+            Text(
+                text = "Special Promo",
+                fontSize = 12.sp,
+                color = Color.White,
+                modifier = Modifier
+                    .background(Color(0xFFE55A4F), RoundedCornerShape(8.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Buy One\nGet One FREE",
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
             )
         }
     }
 }
 
 @Composable
-fun PromoBanner() {
-    Column (
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth()
-            .height(150.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .background(MaterialTheme.colorScheme.primary)
-    ) {
-
-        Text(
-            text = "Promo",
-            color = Color.White,
-            fontSize = 12.sp,
-            modifier = Modifier
-                .padding(12.dp)
-                .background(
-                    Color(0xFFE55A4F),
-                    shape = RoundedCornerShape(10.dp)
-                )
-                .padding(horizontal = 10.dp, vertical = 4.dp)
-        )
-
-        Text(
-            text = "Buy one get\none FREE",
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-}
-@Composable
-fun CategoryTabs() {
+fun CategoryTabsModern() {
     val tabs = listOf("All Coffee", "Machiatto", "Latte", "Americano")
     var selected by remember { mutableStateOf(0) }
 
@@ -174,99 +211,111 @@ fun CategoryTabs() {
     ) {
         items(tabs.size) { index ->
             val item = tabs[index]
-
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(14.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .background(
                         if (index == selected) MaterialTheme.colorScheme.primary
                         else Color(0xFFEDEDED)
                     )
                     .clickable { selected = index }
-                    .padding(horizontal = 18.dp, vertical = 10.dp)
+                    .padding(horizontal = 20.dp, vertical = 12.dp)
             ) {
                 Text(
                     text = item,
                     color = if (index == selected) Color.White else Color.Black,
-                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
         }
     }
-
 }
-data class Coffee(
-    val name: String,
-    val type: String,
-    val price: String,
-    val img: Int
-)
-
-private val coffees = listOf(
-    Coffee("Caffe Mocha", "Deep Foam", "$ 4.53", R.drawable.homefill),
-    Coffee("Caffe Mocha", "Deep Foam", "$ 4.53", R.drawable.homefill),
-    Coffee("Flat White", "Espresso", "$ 3.53", R.drawable.homefill)
-)
-
 @Composable
-fun CoffeeGrid() {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier
-            .padding(16.dp)
-            .height(800.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(coffees) { item ->
-            CoffeeItem(item)
+fun CoffeeGridModern(viewModel: CoffeeViewModel = viewModel()) {
+    val coffees by viewModel.coffees.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+    when {
+        isLoading -> {
+            Text("Loading...", modifier = Modifier.padding(16.dp))
+        }
+
+        error != null -> {
+            Text(
+                text = error ?: "",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        else -> {
+            LazyVerticalGrid( columns = GridCells.Fixed(2), modifier = Modifier
+                .padding(16.dp)
+                .height(800.dp), verticalArrangement = Arrangement.spacedBy(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp) ){
+
+
+                items(coffees) { coffee ->
+                    CoffeeItemModern(coffee)
+                }
+            }
         }
     }
+
 }
 
 @Composable
-fun CoffeeItem(item: Coffee) {
-    Column(
+fun CoffeeItemModern(item: Coffee) {
+    Box(
         modifier = Modifier
-            .clip(RoundedCornerShape(22.dp))
+            .clickable { }
+            .shadow(2.dp, RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
             .background(Color.White)
     ) {
-        Image(
-            painter = painterResource(item.img),
-            contentDescription = null,
-            modifier = Modifier
-                .height(150.dp)
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(22.dp)),
-            contentScale = ContentScale.Crop
-        )
-
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(item.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text(item.type, fontSize = 12.sp, color = Color.Gray)
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(item.price, fontWeight = FontWeight.Bold)
-
-            Box(
+        Column {
+            Box {
+//                LoadImage(url=item.imageRes,modifier = Modifier
+//                    .height(160.dp)
+//                    .fillMaxWidth()
+//                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)), description = item.name)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.White)
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.heart), //fav icon
+                        contentDescription = "Favorite",
+                        tint = Color.Red
+                    )
+                }
+            }
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(item.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(item.category, fontSize = 12.sp, color = Color.Gray)
+            }
+            Row(
                 modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("+", color = Color.White, fontWeight = FontWeight.Bold)
+                Text(item.price.toString(), fontWeight = FontWeight.Bold)
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primary),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("+", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
 }
-
-

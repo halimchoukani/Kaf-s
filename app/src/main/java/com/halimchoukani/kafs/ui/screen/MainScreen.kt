@@ -33,12 +33,17 @@ import androidx.navigation.compose.rememberNavController
 import com.halimchoukani.kafs.BottomBarScreen
 import com.halimchoukani.kafs.BottomNavGraph
 @Composable
-fun MainScreen() {
+fun MainScreen(userName: String = "User") {
     val navController = rememberNavController()
+
     Scaffold(
-        bottomBar = {BottomBar(navController = navController)}
-    ) {paddingValues ->
-        BottomNavGraph(navController = navController, paddingValues = paddingValues)
+        bottomBar = { BottomBar(navController = navController) }
+    ) { paddingValues ->
+        BottomNavGraph(
+            navController = navController,
+            paddingValues = paddingValues,
+            userName = userName
+        )
     }
 }
 

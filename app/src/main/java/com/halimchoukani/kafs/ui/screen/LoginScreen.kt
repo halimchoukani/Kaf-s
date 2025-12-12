@@ -153,7 +153,7 @@ fun LoginScreen(
                         if(task.isSuccessful){
                             Toast.makeText(context,"Login Successful", Toast.LENGTH_SHORT).show()
                             navController.navigate(Screen.MainScreen.route){
-                                popUpTo(Screen.Login.route) { inclusive = true  }
+                                popUpTo(0)
                             }
                         }else{
                             Toast.makeText(context,

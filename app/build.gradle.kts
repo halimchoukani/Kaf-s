@@ -45,6 +45,7 @@ android {
 
 dependencies {
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
     val nav_version = "2.9.6"
     implementation("androidx.compose.material:material:1.6.8")
     implementation("androidx.navigation:navigation-compose:$nav_version")
@@ -58,7 +59,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(platform("com.google.firebase:firebase-bom:32.7.0")) // Check for the latest version
     implementation("com.google.firebase:firebase-auth-ktx")
-
+    implementation("io.coil-kt:coil-compose:2.6.0")
     // 3. Optional: Add a dependency for Firebase common features
     implementation("com.google.firebase:firebase-analytics-ktx")
     testImplementation(libs.junit)

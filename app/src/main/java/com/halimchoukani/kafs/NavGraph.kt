@@ -1,6 +1,8 @@
 package com.halimchoukani.kafs
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,6 +10,8 @@ import com.halimchoukani.kafs.ui.screen.LoginScreen
 import com.halimchoukani.kafs.ui.screen.MainScreen
 import com.halimchoukani.kafs.ui.screen.SignUpScreen
 import com.halimchoukani.kafs.ui.screen.SplashScreen
+import com.halimchoukani.kafs.viewmodel.SplashViewModel
+import com.halimchoukani.kafs.viewmodel.UserViewModel
 
 
 @Composable
@@ -20,7 +24,20 @@ fun SetupNavGraph(
         composable(
             route = Screen.Splash.route
         ){
-            SplashScreen(navController = navController)
+            val vm: SplashViewModel = viewModel()
+
+            when (vm.isLoggedIn.value) {
+                true -> navController.navigate(Screen.MainScreen.route) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
+                false -> navController.navigate(Screen.Login.route) {
+                    popUpTo(Screen.Splash.route) { inclusive = true }
+                }
+
+                else -> {
+
+                }
+            }
         }
         composable(
             route = Screen.Login.route
@@ -36,7 +53,9 @@ fun SetupNavGraph(
         composable(
             route = Screen.MainScreen.route
         ){
-            MainScreen()
+            val userViewModel: UserViewModel = viewModel() // or viewModel()
+            val userName by userViewModel.userName
+            MainScreen(userName = userName)
         }
     }
 }

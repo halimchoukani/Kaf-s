@@ -29,6 +29,9 @@ import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.halimchoukani.kafs.R // Ensure this import is correct
 import com.halimchoukani.kafs.Screen
+import com.halimchoukani.kafs.data.model.User
+import com.halimchoukani.kafs.data.repository.UserRepository
+import java.util.Date
 
 @Composable
 fun SignUpScreen(
@@ -203,16 +206,35 @@ fun SignUpScreen(
         // --- 4. SignUp Button ---
         Button(
             onClick = {
-                Firebase.auth.createUserWithEmailAndPassword(email,password)
-                    .addOnCompleteListener { task->
-                        if(task.isSuccessful){
-                            Toast.makeText(context,"Sign Up Successful", Toast.LENGTH_SHORT).show()
-                            navController.navigate(Screen.Login.route){
-                                popUpTo(Screen.SignUp.route) { inclusive = true  }
+                Firebase.auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            val firebaseUser = task.result?.user
+                            if (firebaseUser != null) {
+                                val user = User(
+                                    id = firebaseUser.uid,
+                                    email = email,
+                                    fullName = fullName,
+                                    address = "",
+                                    favList = arrayListOf(),
+                                    createdAt = Date() // store as Long for Firebase
+                                )
+
+                                UserRepository.createUser(
+                                    user = user,
+                                    onSuccess = {
+                                        Toast.makeText(context, "Sign Up Successful", Toast.LENGTH_SHORT).show()
+                                        navController.navigate(Screen.Login.route) {
+                                            popUpTo(Screen.SignUp.route) { inclusive = true }
+                                        }
+                                    },
+                                    onFail = {
+                                        Toast.makeText(context, "Sign Up Failed (DB Error)", Toast.LENGTH_SHORT).show()
+                                    }
+                                )
                             }
-                        }else{
-                            Toast.makeText(context,
-                                task.exception?.message?:"Sign Up Failed", Toast.LENGTH_SHORT).show()
+                        } else {
+                            Toast.makeText(context, task.exception?.message ?: "Sign Up Failed", Toast.LENGTH_SHORT).show()
                         }
                     }
             },
