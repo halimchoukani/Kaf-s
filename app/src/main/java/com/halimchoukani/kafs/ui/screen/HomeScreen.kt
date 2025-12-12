@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,7 +60,12 @@ import com.halimchoukani.kafs.viewmodel.CoffeeViewModel
 
 
 @Composable
-fun HomeScreen(paddingValues: PaddingValues,userName: String) {
+fun HomeScreen(paddingValues: PaddingValues, userName: String, viewModel: CoffeeViewModel = viewModel()) {
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedCategory by viewModel.selectedCategory.collectAsState()
+    val coffees by viewModel.filteredCoffees.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,13 +75,13 @@ fun HomeScreen(paddingValues: PaddingValues,userName: String) {
     ) {
         HeaderSectionModern(userName)
         Spacer(modifier = Modifier.height(12.dp))
-        SearchSectionModern()
+        SearchSectionModern(searchQuery, viewModel::onSearchQueryChange)
         Spacer(modifier = Modifier.height(16.dp))
         PromoBannerModern()
         Spacer(modifier = Modifier.height(16.dp))
-        CategoryTabsModern()
+        CategoryTabsModern(coffees,isLoading,error,selectedCategory, viewModel::onCategorySelect)
         Spacer(modifier = Modifier.height(16.dp))
-        CoffeeGridModern()
+        CoffeeGridModern(coffees,isLoading,error)
     }
 }
 
@@ -119,7 +125,7 @@ fun HeaderSectionModern(userName: String) {
 }
 
 @Composable
-fun SearchSectionModern() {
+fun SearchSectionModern(query: String, onQueryChange: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -127,8 +133,8 @@ fun SearchSectionModern() {
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         TextField(
-            value = "",
-            onValueChange = {},
+            value = query,
+            onValueChange = onQueryChange,
             placeholder = { Text("Search coffee") },
             singleLine = true,
             modifier = Modifier
@@ -149,16 +155,6 @@ fun SearchSectionModern() {
                 )
             }
         )
-
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.White)
-        }
     }
 }
 
@@ -201,40 +197,56 @@ fun PromoBannerModern() {
 }
 
 @Composable
-fun CategoryTabsModern() {
-    val tabs = listOf("All Coffee", "Machiatto", "Latte", "Americano")
-    var selected by remember { mutableStateOf(0) }
+fun CategoryTabsModern(coffees:List<Coffee>,isLoading: Boolean, error:String?,selectedCategory: String, onCategorySelect: (String) -> Unit) {
 
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
-        items(tabs.size) { index ->
-            val item = tabs[index]
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(
-                        if (index == selected) MaterialTheme.colorScheme.primary
-                        else Color(0xFFEDEDED)
-                    )
-                    .clickable { selected = index }
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
+    when {
+        isLoading -> {
+            Text("Loading...", modifier = Modifier.padding(16.dp))
+        }
+
+        error != null -> {
+            Text(
+                text = error ?: "",
+                color = Color.Red,
+                modifier = Modifier.padding(16.dp)
+            )
+        }
+
+        else -> {
+            val categorySet = coffees.map { it.category }.toSet()
+            val tabs = listOf("All Coffee") + categorySet.toList()
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                Text(
-                    text = item,
-                    color = if (index == selected) Color.White else Color.Black,
-                    fontWeight = FontWeight.Medium
-                )
+                items(tabs.size) { index ->
+                    val item = tabs[index]
+                    val isSelected = item == selectedCategory
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primary
+                                else Color(0xFFEDEDED)
+                            )
+                            .clickable { onCategorySelect(item) }
+                            .padding(horizontal = 20.dp, vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = item,
+                            color = if (isSelected) Color.White else Color.Black,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
             }
         }
     }
+
 }
 @Composable
-fun CoffeeGridModern(viewModel: CoffeeViewModel = viewModel()) {
-    val coffees by viewModel.coffees.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?) {
+
     when {
         isLoading -> {
             Text("Loading...", modifier = Modifier.padding(16.dp))
@@ -255,7 +267,7 @@ fun CoffeeGridModern(viewModel: CoffeeViewModel = viewModel()) {
 
 
                 items(coffees) { coffee ->
-                    CoffeeItemModern(coffee)
+                    CoffeeItem(coffee)
                 }
             }
         }
@@ -264,48 +276,78 @@ fun CoffeeGridModern(viewModel: CoffeeViewModel = viewModel()) {
 }
 
 @Composable
-fun CoffeeItemModern(item: Coffee) {
+fun CoffeeItem(item: Coffee) {
     Box(
         modifier = Modifier
+            .padding(8.dp)
             .clickable { }
-            .shadow(2.dp, RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
+            .shadow(4.dp, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
     ) {
         Column {
+            // Image with favorite icon
             Box {
-//                LoadImage(url=item.imageRes,modifier = Modifier
-//                    .height(160.dp)
-//                    .fillMaxWidth()
-//                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)), description = item.name)
+                LoadImage(
+                    url = item.imageRes,
+                    modifier = Modifier
+                        .height(160.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                    description = item.name
+                )
+
+                // Favorite icon
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
+                        .clip(RoundedCornerShape(bottomStart = 12.dp))
                         .background(Color.White)
                         .align(Alignment.TopEnd)
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.heart), //fav icon
+                        painter = painterResource(R.drawable.heart),
                         contentDescription = "Favorite",
-                        tint = Color.Red
+                        tint = Color.Red,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
+
+            // Coffee details
             Column(modifier = Modifier.padding(12.dp)) {
-                Text(item.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                Text(item.category, fontSize = 12.sp, color = Color.Gray)
+                Text(
+                    text = item.name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = item.category,
+                    fontSize = 12.sp,
+                    color = Color.Gray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
+
+            // Price and add button
             Row(
                 modifier = Modifier
-                    .padding(12.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(item.price.toString(), fontWeight = FontWeight.Bold)
+                Text(
+                    text = "${item.price} TND",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+
                 Box(
                     modifier = Modifier
                         .size(36.dp)
@@ -313,9 +355,15 @@ fun CoffeeItemModern(item: Coffee) {
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("+", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "+",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
                 }
             }
         }
     }
 }
+

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "883625542236",
+    "firebase_url": "https://kafes-d8f58-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "kafes-d8f58",
+    "storage_bucket": "kafes-d8f58.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:883625542236:android:0a85f4e6634784c686dc99",
+        "android_client_info": {
+          "package_name": "com.halimchoukani.kafs"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACorTeZ9Hs4-K0KhqQjHqY0SAE_0rdcAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
