@@ -2,13 +2,20 @@ package com.halimchoukani.kafs.domain.usecase
 
 import com.halimchoukani.kafs.data.model.User
 import com.halimchoukani.kafs.data.repository.UserRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-class LoadUserUseCase {
+class LoadUserUseCase(private val userRepository: UserRepository) {
 
-    fun execute(
+    suspend fun execute(
         uid: String,
         onResult: (User?) -> Unit
     ) {
-        UserRepository.getUser(uid, onResult)
+        // 1. Try to load from local Room DB first for speed/offline support
+        val localUser = userRepository.getUserFromLocal(uid)
+        
+        if (localUser != null) {
+            onResult(localUser)
+        }
     }
 }

@@ -9,42 +9,37 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -52,20 +47,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.halimchoukani.kafs.R
+import com.halimchoukani.kafs.Screen
 import com.halimchoukani.kafs.data.model.Coffee
-import com.halimchoukani.kafs.ui.component.BottomNavigationBar
 import com.halimchoukani.kafs.ui.component.LoadImage
 import com.halimchoukani.kafs.viewmodel.CoffeeViewModel
+import com.halimchoukani.kafs.viewmodel.UserViewModel
 
 
 @Composable
-fun HomeScreen(paddingValues: PaddingValues, userName: String, viewModel: CoffeeViewModel = viewModel()) {
+fun HomeScreen(
+    paddingValues: PaddingValues,
+    userName: String,
+    viewModel: CoffeeViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel(),
+    onLogout: () -> Unit = {},
+    navController: NavController
+) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val coffees by viewModel.filteredCoffees.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -73,7 +78,9 @@ fun HomeScreen(paddingValues: PaddingValues, userName: String, viewModel: Coffee
             .background(MaterialTheme.colorScheme.surface)
             .verticalScroll(rememberScrollState())
     ) {
-        HeaderSectionModern(userName)
+        HeaderSectionModern(userName, onLogout = {
+            userViewModel.logout(onLogout)
+        }, navController = navController)
         Spacer(modifier = Modifier.height(12.dp))
         SearchSectionModern(searchQuery, viewModel::onSearchQueryChange)
         Spacer(modifier = Modifier.height(16.dp))
@@ -81,16 +88,16 @@ fun HomeScreen(paddingValues: PaddingValues, userName: String, viewModel: Coffee
         Spacer(modifier = Modifier.height(16.dp))
         CategoryTabsModern(coffees,isLoading,error,selectedCategory, viewModel::onCategorySelect)
         Spacer(modifier = Modifier.height(16.dp))
-        CoffeeGridModern(coffees,isLoading,error)
+        CoffeeGridModern(coffees,isLoading,error, navController)
     }
 }
 
 @Composable
-fun HeaderSectionModern(userName: String) {
+fun HeaderSectionModern(userName: String, onLogout: () -> Unit, navController: NavController) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -108,18 +115,33 @@ fun HeaderSectionModern(userName: String) {
             )
         }
 
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Face,
-                contentDescription = "Profile",
-                tint = Color.White
-            )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onLogout) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "Logout",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.primary),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(onClick = {
+                    navController.navigate(Screen.Profile.route)
+                }){
+                    Icon(
+                        imageVector = Icons.Default.Face,
+                        contentDescription = "Profile",
+                        tint = Color.White
+                    )
+                }
+
+            }
         }
     }
 }
@@ -245,7 +267,7 @@ fun CategoryTabsModern(coffees:List<Coffee>,isLoading: Boolean, error:String?,se
 
 }
 @Composable
-fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?) {
+fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?, navController: NavController) {
 
     when {
         isLoading -> {
@@ -267,7 +289,7 @@ fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?) {
 
 
                 items(coffees) { coffee ->
-                    CoffeeItem(coffee)
+                    CoffeeItem(coffee, navController)
                 }
             }
         }
@@ -276,14 +298,16 @@ fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?) {
 }
 
 @Composable
-fun CoffeeItem(item: Coffee) {
+fun CoffeeItem(item: Coffee, navController: NavController) {
     Box(
         modifier = Modifier
             .padding(8.dp)
-            .clickable { }
             .shadow(4.dp, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
             .background(Color.White)
+            .clickable { 
+                navController.navigate(Screen.CoffeeDetail.passCoffeeId(item.id))
+            }
     ) {
         Column {
             // Image with favorite icon
@@ -366,4 +390,3 @@ fun CoffeeItem(item: Coffee) {
         }
     }
 }
-

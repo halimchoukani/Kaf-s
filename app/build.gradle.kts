@@ -2,15 +2,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
     // 1. Apply the Google Services plugin
     id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.halimchoukani.kafs"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.halimchoukani.kafs"
@@ -46,6 +45,11 @@ android {
 dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.coroutines.android)
+    implementation("com.google.code.gson:gson:2.10.1")
+    ksp(libs.androidx.room.compiler)
     val nav_version = "2.9.6"
     implementation("androidx.compose.material:material:1.6.8")
     implementation("androidx.navigation:navigation-compose:$nav_version")

@@ -23,22 +23,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.halimchoukani.kafs.R // Ensure this import is correct
+import com.halimchoukani.kafs.R
 import com.halimchoukani.kafs.Screen
-import com.halimchoukani.kafs.data.model.User
-import com.halimchoukani.kafs.data.repository.UserRepository
-import java.util.Date
+import com.halimchoukani.kafs.viewmodel.SignUpViewModel
 
 @Composable
 fun SignUpScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: SignUpViewModel = viewModel()
 ) {
-    // State to hold text input values
-
     var email by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -46,39 +42,45 @@ fun SignUpScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
+    // Observe error state from ViewModel
+    LaunchedEffect(viewModel.error) {
+        viewModel.error?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.error = null // Clear error after showing
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.tertiary) // White background
+            .background(MaterialTheme.colorScheme.tertiary)
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // --- 1. Logo & Welcome Section ---
         Image(
             painter = painterResource(id = R.drawable.kafes_logo),
             contentDescription = "Kafés Logo",
             modifier = Modifier
-                .size(120.dp) // Smaller logo than splash screen
+                .size(120.dp)
                 .padding(bottom = 16.dp)
         )
 
         Text(
             text = "Create New Account",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary // Dark Walnut
+            color = MaterialTheme.colorScheme.primary
         )
 
         Text(
             text = "Please Sign up to create new account",
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // Greyish text
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             modifier = Modifier.padding(bottom = 32.dp)
         )
 
-        // --- 2. Input Fields ---
-
-        // Name Field
         OutlinedTextField(
             value = fullName,
             onValueChange = { fullName = it },
@@ -87,25 +89,22 @@ fun SignUpScreen(
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "User Icon",
-                    tint = MaterialTheme.colorScheme.secondary // Copper Icon
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.secondary, // Dust Grey
+                unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
                 focusedLabelColor = MaterialTheme.colorScheme.secondary,
                 cursorColor = MaterialTheme.colorScheme.secondary
             ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        // Email Field
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -114,14 +113,14 @@ fun SignUpScreen(
                 Icon(
                     imageVector = Icons.Default.Email,
                     contentDescription = "Email Icon",
-                    tint = MaterialTheme.colorScheme.secondary // Copper Icon
+                    tint = MaterialTheme.colorScheme.secondary
                 )
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.secondary, // Dust Grey
+                unfocusedBorderColor = MaterialTheme.colorScheme.secondary,
                 focusedLabelColor = MaterialTheme.colorScheme.secondary,
                 cursorColor = MaterialTheme.colorScheme.secondary
             ),
@@ -131,8 +130,6 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        // Password Field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -167,12 +164,10 @@ fun SignUpScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-
-        // Confirm Password Field
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text("Password") },
+            label = { Text("Confirm Password") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Lock,
@@ -202,61 +197,47 @@ fun SignUpScreen(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-        val context = LocalContext.current
-        // --- 4. SignUp Button ---
+
         Button(
             onClick = {
-                Firebase.auth.createUserWithEmailAndPassword(email, password)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            val firebaseUser = task.result?.user
-                            if (firebaseUser != null) {
-                                val user = User(
-                                    id = firebaseUser.uid,
-                                    email = email,
-                                    fullName = fullName,
-                                    address = "",
-                                    favList = arrayListOf(),
-                                    createdAt = Date() // store as Long for Firebase
-                                )
-
-                                UserRepository.createUser(
-                                    user = user,
-                                    onSuccess = {
-                                        Toast.makeText(context, "Sign Up Successful", Toast.LENGTH_SHORT).show()
-                                        navController.navigate(Screen.Login.route) {
-                                            popUpTo(Screen.SignUp.route) { inclusive = true }
-                                        }
-                                    },
-                                    onFail = {
-                                        Toast.makeText(context, "Sign Up Failed (DB Error)", Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-                            }
-                        } else {
-                            Toast.makeText(context, task.exception?.message ?: "Sign Up Failed", Toast.LENGTH_SHORT).show()
-                        }
+                if (email.isEmpty() || fullName.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                if (password != confirmPassword) {
+                    Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
+                    return@Button
+                }
+                viewModel.register(email, password, fullName) {
+                    Toast.makeText(context, "Sign Up Successful", Toast.LENGTH_SHORT).show()
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.SignUp.route) { inclusive = true }
                     }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary, // Dark Walnut
-                contentColor = MaterialTheme.colorScheme.onPrimary // White
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp),
+            enabled = !viewModel.loading
         ) {
-            Text(
-                text = "Sign Up",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-            )
+            if (viewModel.loading) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
+            } else {
+                Text(
+                    text = "Sign Up",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- 5. Sign Up Link ---
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
@@ -267,7 +248,7 @@ fun SignUpScreen(
             )
             Text(
                 text = "Login",
-                color = MaterialTheme.colorScheme.secondary, // Copper
+                color = MaterialTheme.colorScheme.secondary,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable {
                     navController.navigate(route = Screen.Login.route)
@@ -280,9 +261,7 @@ fun SignUpScreen(
 @Preview(showBackground = true)
 @Composable
 fun SignUpScreenPreview() {
-    // KafésTheme { // Uncomment to apply your custom theme
     SignUpScreen(
         navController = rememberNavController()
     )
-    // }
 }

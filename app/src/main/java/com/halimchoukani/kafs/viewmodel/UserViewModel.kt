@@ -1,24 +1,34 @@
 package com.halimchoukani.kafs.viewmodel
 
+import android.app.Application
 import androidx.compose.runtime.*
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.halimchoukani.kafs.data.local.database.DatabaseProvider
 import com.halimchoukani.kafs.data.model.User
+import com.halimchoukani.kafs.data.repository.UserRepository
+import com.halimchoukani.kafs.domain.usecase.LoadUserUseCase
 import kotlinx.coroutines.launch
 
-class UserViewModel : ViewModel() {
+class UserViewModel(application: Application) : AndroidViewModel(application) {
 
-    // The current logged-in user
     private val _user = mutableStateOf<User?>(null)
     val user: State<User?> = _user
 
-    // Expose username directly for convenience
     val userName: State<String> = derivedStateOf { _user.value?.fullName ?: "User" }
 
     private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseDatabase.getInstance().reference.child("users")
+    
+    // Repository and UseCase setup
+    private val userRepository: UserRepository by lazy {
+        val database = DatabaseProvider.getDatabase(application)
+        UserRepository(database.userDao())
+    }
+    
+    private val loadUserUseCase: LoadUserUseCase by lazy {
+        LoadUserUseCase(userRepository)
+    }
 
     init {
         loadCurrentUser()
@@ -29,24 +39,38 @@ class UserViewModel : ViewModel() {
         if (currentUser != null) {
             val uid = currentUser.uid
             viewModelScope.launch {
-                db.child(uid).get()
-                    .addOnSuccessListener { snapshot ->
-                        val fetchedUser = snapshot.getValue(User::class.java)
-                        _user.value = fetchedUser
+                loadUserUseCase.execute(uid) { fetchedUser ->
+                    _user.value = fetchedUser
+                    
+                    // Sync locally if fetched from remote
+                    fetchedUser?.let {
+                        viewModelScope.launch {
+                            userRepository.saveUserLocally(it)
+                        }
                     }
-                    .addOnFailureListener {
-                        _user.value = null // failed to fetch user
-                    }
+                }
             }
         }
     }
 
-    // Optional: refresh user manually
+    fun updateUser(updatedUser: User, onSuccess: () -> Unit, onFail: (String) -> Unit) {
+        viewModelScope.launch {
+            // 1. Update Firebase
+            userRepository.saveUserToFirebase(updatedUser, {
+                // 2. Update Local Room DB
+                viewModelScope.launch {
+                    userRepository.saveUserLocally(updatedUser)
+                    _user.value = updatedUser
+                    onSuccess()
+                }
+            }, onFail)
+        }
+    }
+
     fun refreshUser() {
         loadCurrentUser()
     }
 
-    // Optional: logout
     fun logout(onComplete: () -> Unit) {
         auth.signOut()
         _user.value = null

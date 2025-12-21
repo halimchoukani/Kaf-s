@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
@@ -32,8 +31,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.halimchoukani.kafs.BottomBarScreen
 import com.halimchoukani.kafs.BottomNavGraph
+
 @Composable
-fun MainScreen(userName: String = "User") {
+fun MainScreen(
+    userName: String = "User",
+    onLogout: () -> Unit = {}
+) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -42,7 +45,8 @@ fun MainScreen(userName: String = "User") {
         BottomNavGraph(
             navController = navController,
             paddingValues = paddingValues,
-            userName = userName
+            userName = userName,
+            onLogout = onLogout
         )
     }
 }
@@ -64,9 +68,7 @@ fun BottomBar(navController: NavHostController){
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .shadow(6.dp, RoundedCornerShape(24.dp)),
-        // 1. Set the background to your primary background color (White)
         containerColor = MaterialTheme.colorScheme.background,
-        // Optional: Add a subtle elevation/shadow
         tonalElevation = 8.dp
     ) {
         screens.forEach { screen ->
@@ -89,30 +91,26 @@ fun RowScope.AddItem(
         it.route == screen.route
     } == true
 
-    // Use Copper for the selected icon, and a neutral color (OnSurface) for unselected
     val iconColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
     val icon = if(selected) painterResource(screen.filledIcon) else painterResource(screen.icon)
     NavigationBarItem(
-        // Remove the 'label' composable entirely to match the design (no text under icon)
         label = null,
         icon = {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // 1. Icon
                 Icon(
                     painter = icon,
                     contentDescription = screen.title,
                     tint = iconColor,
-                    modifier = Modifier.size(24.dp) // Standard icon size
+                    modifier = Modifier.size(36.dp)
                 )
 
-                // 2. Custom Indicator (The colored dot)
                 if (selected) {
                     Spacer(modifier = Modifier.size(4.dp))
                     Box(
                         modifier = Modifier
                             .size(6.dp)
                             .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.secondary) // Copper dot
+                            .background(MaterialTheme.colorScheme.secondary)
                     )
                 }
             }
@@ -127,11 +125,10 @@ fun RowScope.AddItem(
                 restoreState = true
             }
         },
-        // 3. Customize NavigationBarItem defaults
         colors = NavigationBarItemDefaults.colors(
-            selectedIconColor = MaterialTheme.colorScheme.secondary, // Copper (though we override this above)
+            selectedIconColor = MaterialTheme.colorScheme.secondary,
             unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            indicatorColor = MaterialTheme.colorScheme.background.copy(alpha = 0.0f) // Keep the background clear/transparent
+            indicatorColor = MaterialTheme.colorScheme.background.copy(alpha = 0.0f)
         )
     )
 }
