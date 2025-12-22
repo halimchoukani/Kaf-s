@@ -33,7 +33,8 @@ fun BottomNavGraph(
                 paddingValues = paddingValues,
                 userName = userName,
                 onLogout = onLogout,
-                navController = navController
+                navController = navController,
+                userViewModel = userViewModel
             )
         }
         composable(
@@ -48,13 +49,15 @@ fun BottomNavGraph(
         composable(route = BottomBarScreen.Fav.route) {
             FavoriteScreen(
                 paddingValues = paddingValues,
-                navController = navController
+                navController = navController,
+                userViewModel = userViewModel
             )
         }
 
         composable(route = BottomBarScreen.Cart.route) {
             CartScreen(
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                userViewModel = userViewModel
             )
         }
 
@@ -72,7 +75,8 @@ fun BottomNavGraph(
             CoffeeDetailScreen(
                 coffeeId = coffeeId,
                 navController = navController,
-                paddingValues = paddingValues
+                paddingValues = paddingValues,
+                userViewModel = userViewModel
             )
         }
     }
