@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.halimchoukani.kafs.ui.component.LoadImage
 import com.halimchoukani.kafs.viewmodel.CoffeeViewModel
+import com.halimchoukani.kafs.viewmodel.UserViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +29,8 @@ fun CoffeeDetailScreen(
     coffeeId: String,
     navController: NavController,
     paddingValues: PaddingValues,
-    viewModel: CoffeeViewModel = viewModel()
+    viewModel: CoffeeViewModel = viewModel(),
+    userViewModel: UserViewModel = viewModel()
 ) {
     val coffees by viewModel.filteredCoffees.collectAsState()
     val coffee = coffees.find { it.id == coffeeId }
@@ -76,7 +78,6 @@ fun CoffeeDetailScreen(
                             modifier = Modifier.fillMaxSize(),
                             description = coffee.name,
                         )
-                        // Optional: overlay category or favorite button
                     }
                 }
 
@@ -112,7 +113,7 @@ fun CoffeeDetailScreen(
                 item{
                     Row(
                         modifier = Modifier
-                            .padding(horizontal = 24.dp, vertical = 16.dp)
+                            .padding(vertical = 16.dp)
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
@@ -127,7 +128,7 @@ fun CoffeeDetailScreen(
                             )
                         }
                         Button(
-                            onClick = { /* Add to cart */ },
+                            onClick = { userViewModel.addToCart(coffee) },
                             modifier = Modifier
                                 .height(56.dp)
                                 .width(180.dp),

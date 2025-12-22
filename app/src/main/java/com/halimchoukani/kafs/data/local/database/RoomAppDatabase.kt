@@ -8,7 +8,7 @@ import com.halimchoukani.kafs.data.local.entity.UserEntity
 
 @Database(
     entities = [UserEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

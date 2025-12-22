@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
@@ -31,11 +32,13 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.halimchoukani.kafs.BottomBarScreen
 import com.halimchoukani.kafs.BottomNavGraph
+import com.halimchoukani.kafs.viewmodel.UserViewModel
 
 @Composable
 fun MainScreen(
     userName: String = "User",
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    userViewModel: UserViewModel = viewModel()
 ) {
     val navController = rememberNavController()
 
@@ -46,7 +49,8 @@ fun MainScreen(
             navController = navController,
             paddingValues = paddingValues,
             userName = userName,
-            onLogout = onLogout
+            onLogout = onLogout,
+            userViewModel = userViewModel
         )
     }
 }

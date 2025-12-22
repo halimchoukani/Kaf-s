@@ -20,4 +20,17 @@ object CoffeeRepository {
                 onResult(null)
             }
     }
+
+    fun getCoffeeById(coffeeId: String, onResult: (Coffee?) -> Unit) {
+        db
+            .child(coffeeId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val coffee = snapshot.getValue(Coffee::class.java)
+                onResult(coffee)
+            }
+            .addOnFailureListener { exception ->
+                onResult(null)
+            }
+    }
 }

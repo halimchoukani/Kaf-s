@@ -14,7 +14,10 @@ object DatabaseProvider {
                 context.applicationContext,
                 RoomAppDatabase::class.java,
                 "kafes"
-            ).build().also { INSTANCE = it }
+            )
+            .fallbackToDestructiveMigration()
+            .build()
+            .also { INSTANCE = it }
         }
     }
 }

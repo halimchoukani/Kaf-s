@@ -8,5 +8,6 @@ data class User(
     val fullName: String="",
     val address: String="",
     val favList:List<Coffee> = arrayListOf(),
+    val cart: List<CartItem> = arrayListOf(),
     val createdAt: Date = Date(),
 )

@@ -57,7 +57,9 @@ class CoffeeViewModel : ViewModel() {
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }
-
+    fun getCoffeeById(coffeeId: String, onResult: (Coffee?) -> Unit) {
+        CoffeeRepository.getCoffeeById(coffeeId, onResult)
+    }
     fun onCategorySelect(category: String) {
         _selectedCategory.value = category
     }

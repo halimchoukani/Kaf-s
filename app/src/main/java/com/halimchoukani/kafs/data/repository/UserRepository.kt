@@ -34,6 +34,10 @@ class UserRepository(private val userDao: UserDao) {
         }
     }
 
+    suspend fun updateUser(user: User) = withContext(Dispatchers.IO){
+        userDao.update(user.toEntity())
+    }
+
     /**
      * Retrieves a user from the local Room database.
      */
@@ -64,6 +68,7 @@ class UserRepository(private val userDao: UserDao) {
             fullName = fullName,
             address = address,
             favList = favList,
+            cart = cart,
             createdAt = createdAt
         )
     }
@@ -75,6 +80,7 @@ class UserRepository(private val userDao: UserDao) {
             fullName = fullName,
             address = address,
             favList = favList,
+            cart = cart,
             createdAt = createdAt
         )
     }

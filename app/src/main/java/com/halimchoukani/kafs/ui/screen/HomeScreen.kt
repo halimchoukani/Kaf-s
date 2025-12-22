@@ -88,7 +88,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(16.dp))
         CategoryTabsModern(coffees,isLoading,error,selectedCategory, viewModel::onCategorySelect)
         Spacer(modifier = Modifier.height(16.dp))
-        CoffeeGridModern(coffees,isLoading,error, navController)
+        CoffeeGridModern(coffees,isLoading,error, navController, userViewModel)
     }
 }
 
@@ -267,7 +267,7 @@ fun CategoryTabsModern(coffees:List<Coffee>,isLoading: Boolean, error:String?,se
 
 }
 @Composable
-fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?, navController: NavController) {
+fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?, navController: NavController, userViewModel: UserViewModel) {
 
     when {
         isLoading -> {
@@ -289,7 +289,7 @@ fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?, nav
 
 
                 items(coffees) { coffee ->
-                    CoffeeItem(coffee, navController)
+                    CoffeeItem(coffee, navController, userViewModel)
                 }
             }
         }
@@ -298,7 +298,9 @@ fun CoffeeGridModern(coffees:List<Coffee>,isLoading: Boolean, error:String?, nav
 }
 
 @Composable
-fun CoffeeItem(item: Coffee, navController: NavController) {
+fun CoffeeItem(item: Coffee, navController: NavController, userViewModel: UserViewModel) {
+    val isFavorite = userViewModel.isFavorite(item.id)
+
     Box(
         modifier = Modifier
             .padding(8.dp)
@@ -331,12 +333,17 @@ fun CoffeeItem(item: Coffee, navController: NavController) {
                         .padding(4.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.heart),
+                    IconButton(onClick = {
+                        userViewModel.toggleFavorite(item)
+                    } ) {
+                        Icon(
+                        painter = if (isFavorite) painterResource(R.drawable.heartfil) else painterResource(R.drawable.heart),
                         contentDescription = "Favorite",
-                        tint = Color.Red,
+                        tint = if (isFavorite) Color.Red else Color.Gray,
                         modifier = Modifier.size(20.dp)
                     )
+                    }
+
                 }
             }
 
