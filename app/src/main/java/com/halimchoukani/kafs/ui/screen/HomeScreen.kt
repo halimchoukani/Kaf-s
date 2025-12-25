@@ -118,29 +118,10 @@ fun HeaderSectionModern(userName: String, onLogout: () -> Unit, navController: N
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onLogout) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    painter = painterResource(R.drawable.logout),
                     contentDescription = "Logout",
                     tint = MaterialTheme.colorScheme.primary
                 )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.primary),
-                contentAlignment = Alignment.Center
-            ) {
-                IconButton(onClick = {
-                    navController.navigate(Screen.Profile.route)
-                }){
-                    Icon(
-                        imageVector = Icons.Default.Face,
-                        contentDescription = "Profile",
-                        tint = Color.White
-                    )
-                }
-
             }
         }
     }

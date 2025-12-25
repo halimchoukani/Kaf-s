@@ -30,10 +30,10 @@ sealed class BottomBarScreen(
         filledIcon = R.drawable.bagfill
     )
 
-    data object Notification : BottomBarScreen(
-        route = "notification",
-        title = "Notifications",
-        icon = R.drawable.notification,
-        filledIcon = R.drawable.notificationfill
+    data object Profile : BottomBarScreen(
+        route = "profile",
+        title = "Profile",
+        icon = R.drawable.profile,
+        filledIcon = R.drawable.profile_fill
     )
 }

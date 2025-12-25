@@ -61,9 +61,11 @@ fun BottomNavGraph(
             )
         }
 
-        composable(route = BottomBarScreen.Notification.route) {
-            NotificationScreen(
-                paddingValues = paddingValues
+        composable(route = BottomBarScreen.Profile.route) {
+            ProfileScreen(
+                paddingValues = paddingValues,
+                userViewModel = userViewModel,
+                navController = navController
             )
         }
 
