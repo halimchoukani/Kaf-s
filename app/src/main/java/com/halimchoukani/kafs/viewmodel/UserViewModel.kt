@@ -1,14 +1,17 @@
 package com.halimchoukani.kafs.viewmodel
 
 import android.app.Application
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
+import com.halimchoukani.kafs.data.firebase.FirebaseModule
 import com.halimchoukani.kafs.data.local.database.DatabaseProvider
 import com.halimchoukani.kafs.data.model.CartItem
 import com.halimchoukani.kafs.data.model.Coffee
+import com.halimchoukani.kafs.data.model.Order
 import com.halimchoukani.kafs.data.model.User
 import com.halimchoukani.kafs.data.repository.UserRepository
 import com.halimchoukani.kafs.domain.usecase.LoadUserUseCase
@@ -21,9 +24,13 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     private val _user = mutableStateOf<User?>(null)
     val user: State<User?> = _user
 
+    private val _orders = mutableStateListOf<Order>()
+    val orders: List<Order> = _orders
+
     val userName: State<String> = derivedStateOf { _user.value?.fullName ?: "User" }
 
     private val auth = FirebaseAuth.getInstance()
+    private val ordersDb = FirebaseModule.db.child("orders")
     
     // Repository and UseCase setup
     private val userRepository: UserRepository by lazy {
@@ -46,15 +53,39 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
             viewModelScope.launch {
                 loadUserUseCase.execute(uid) { fetchedUser ->
                     _user.value = fetchedUser
+                    fetchOrders(uid)
                     
                     // Sync locally if fetched from remote
                     fetchedUser?.let {
                         viewModelScope.launch {
-                            userRepository.saveUserLocally(it)
+                            try {
+                                userRepository.saveUserLocally(it)
+                            } catch (e: Exception) {
+                                Log.e("UserViewModel", "Failed to sync user locally", e)
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun fetchOrders(uid: String) {
+        ordersDb.orderByChild("userId").equalTo(uid).get().addOnSuccessListener { snapshot ->
+            val fetchedOrders = snapshot.children.mapNotNull { it.getValue(Order::class.java) }
+            _orders.clear()
+            _orders.addAll(fetchedOrders.sortedByDescending { it.createdAt })
+        }
+    }
+
+    fun placeOrder(order: Order, onSuccess: () -> Unit, onFail: (String) -> Unit) {
+        ordersDb.child(order.id).setValue(order).addOnSuccessListener {
+            // Clear cart after order
+            clearCart()
+            _orders.add(0, order)
+            onSuccess()
+        }.addOnFailureListener {
+            onFail(it.message ?: "Failed to place order")
         }
     }
 
@@ -176,12 +207,23 @@ class UserViewModel(application: Application) : AndroidViewModel(application) {
     ) {
         viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    userRepository.updateUser(updatedUser)
-                }
+                // 1. Update state immediately for UI responsiveness
                 _user.value = updatedUser
-                onSuccess()
+                
+                // 2. Persist to local database on IO thread
+                withContext(Dispatchers.IO) {
+                    userRepository.saveUserLocally(updatedUser)
+                }
+                
+                // 3. Sync to Firebase in the background
+                userRepository.saveUserToFirebase(updatedUser, {
+                    onSuccess()
+                }, { error ->
+                    Log.e("UserViewModel", "Firebase sync failed: $error")
+                })
+                
             } catch (e: Exception) {
+                Log.e("UserViewModel", "Update failed", e)
                 onFail(e.message ?: "Failed to update locally")
             }
         }

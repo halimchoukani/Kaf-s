@@ -13,6 +13,7 @@ import com.halimchoukani.kafs.ui.screen.CoffeeDetailScreen
 import com.halimchoukani.kafs.ui.screen.FavoriteScreen
 import com.halimchoukani.kafs.ui.screen.HomeScreen
 import com.halimchoukani.kafs.ui.screen.NotificationScreen
+import com.halimchoukani.kafs.ui.screen.OrderConfirmationScreen
 import com.halimchoukani.kafs.ui.screen.ProfileScreen
 import com.halimchoukani.kafs.viewmodel.UserViewModel
 
@@ -57,7 +58,8 @@ fun BottomNavGraph(
         composable(route = BottomBarScreen.Cart.route) {
             CartScreen(
                 paddingValues = paddingValues,
-                userViewModel = userViewModel
+                userViewModel = userViewModel,
+                navController = navController
             )
         }
 
@@ -66,6 +68,15 @@ fun BottomNavGraph(
                 paddingValues = paddingValues,
                 userViewModel = userViewModel,
                 navController = navController
+            )
+        }
+
+        composable(
+            route = Screen.OrderConfirmation.route
+        ) {
+            OrderConfirmationScreen(
+                navController = navController,
+                userViewModel = userViewModel
             )
         }
 

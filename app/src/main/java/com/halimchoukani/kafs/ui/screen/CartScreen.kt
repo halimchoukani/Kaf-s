@@ -19,7 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.halimchoukani.kafs.R
+import com.halimchoukani.kafs.Screen
 import com.halimchoukani.kafs.data.model.CartItem
 import com.halimchoukani.kafs.ui.component.LoadImage
 import com.halimchoukani.kafs.viewmodel.UserViewModel
@@ -27,6 +29,7 @@ import com.halimchoukani.kafs.viewmodel.UserViewModel
 @Composable
 fun CartScreen(
     paddingValues: PaddingValues,
+    navController: NavController,
     userViewModel: UserViewModel = viewModel()
 ) {
     val user by userViewModel.user
@@ -99,7 +102,9 @@ fun CartScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Implement Checkout */ },
+                onClick = { 
+                    navController.navigate(Screen.OrderConfirmation.route)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
